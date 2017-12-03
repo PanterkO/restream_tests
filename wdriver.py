@@ -1,19 +1,26 @@
-from selenium.webdriver.chrome.webdriver import WebDriver
+from selenium import webdriver
+
 import time
+import os
+
+from PageObject.basepage import BasePage
+from models.test_data import TestData
+
 
 class Driver:
 
     def __init__(self):
-        self.wd = WebDriver()
+        self.wd = webdriver.Chrome()
         self.wd.maximize_window()
         self.wd.implicitly_wait(60)
-       # self.wd.capabilities()
+        self.data = TestData(self)
+        self.driver = BasePage(self)
 
 
-    def browser_close(self):
-        self.wd.close()
-        self.wd.quit()
-
+    def open_url(self, url):
+        time.sleep(5)
+        wd = self.wd
+        wd.get(url)
 
     def check_products_in_basket(self):
         self.wd.find_element_by_xpath('//nav//a[@href="#/basket"]').click()
@@ -43,19 +50,19 @@ class Driver:
 
     def assert_result(self, search_result):
         time.sleep(.5)
-
+        logs = self.wd.get_log('browser')
         assert len(search_result) == 10
 
+    def execute_js(self, script):
+        exec = self.wd.execute_script(script)
+        return exec
 
     def search_product(self, product):
+        #with open(os.getcwd()+'/script.js') as script:
+        #    self.wd.execute_script(script.read())
         self.wd.find_element_by_xpath('//nav//input[@ng-model="searchQuery"]').send_keys(product)
         self.wd.find_element_by_xpath('//*[@id="searchButton"]').click()
-        js_script = "var performance = window.performance || window.mozPerformance || window.msPerformance || window.webkitPerformance || {}; var network = performance.getEntries() || {}; return network;"
-        js_result = self.wd.execute_script(js_script)
-        print(js_result)
-        #print(self.wd.get_log('browser'))
-        search_result = self.wd.find_elements_by_xpath('//tbody/tr[@class="ng-scope"]')
-        return search_result
+        self.data.search_result = self.wd.find_elements_by_xpath('//tbody/tr[@class="ng-scope"]')
 
 
     def login(self, login, password):
@@ -66,7 +73,10 @@ class Driver:
         self.wd.find_element_by_xpath('//*[@id="loginButton"]').click()
 
 
-    def open_url(self, url):
-        time.sleep(5)
-        wd = self.wd
-        wd.get(url)
+    def clear_basket(self):
+        self.wd.find_element_by_xpath('//nav//a[@href="#/basket"]').click()
+        basket = self.wd.find_elements_by_xpath('//tbody/tr[@class="ng-scope"]')
+        for product in basket:
+            product.find_element_by_xpath('.//i[contains(@class, "fa-trash-o")]').click()
+
+

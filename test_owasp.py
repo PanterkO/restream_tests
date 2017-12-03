@@ -15,19 +15,22 @@ from wdriver import Driver
 -проверить что их цена в корзине соответствует их цене со страницы поиска'''
 
 @pytest.fixture
-def driver(request):
+def driver():
     fixture = Driver()
-    #request.addfinalizer(fixture.browser_close())
     return fixture
+
 
 def test_login_in_owasp(driver):
 
-    driver.open_url('https://restream.sloppy.zone')
-    driver.login('restream5@mailinator.com','123456')
+    data = driver.data
+    driver.open_url(data.url)
+    driver.login(data.login, data.password)
 
     time.sleep(.5)
-    search_result = driver.search_product('OWASP')
-    driver.assert_result(search_result)
-    driver.add_the_cheapest_product_in_basket(search_result)
+    driver.search_product(data.search_path)
+    driver.assert_result(data.search_result)
+    driver.add_the_cheapest_product_in_basket(data.search_result)
     driver.check_products_in_basket()
     time.sleep(10)
+    #todo clear basket
+    driver.clear_basket()
