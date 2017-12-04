@@ -6,3 +6,4 @@ class TestData:
         self.password = '123456'
         self.search_path = 'OWASP'
         self.search_result = None
+
