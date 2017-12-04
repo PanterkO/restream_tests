@@ -3,7 +3,9 @@ from selenium import webdriver
 import time
 import os
 
-from PageObject.basepage import BasePage
+from PageObject.basket_page import BasketPage
+from PageObject.login_page import LoginPage
+from PageObject.products_page import ProductsPage
 from models.test_data import TestData
 
 
@@ -12,71 +14,28 @@ class Driver:
     def __init__(self):
         self.wd = webdriver.Chrome()
         self.wd.maximize_window()
-        self.wd.implicitly_wait(60)
-        self.data = TestData(self)
-        self.driver = BasePage(self)
-
+        self.wd.implicitly_wait(1)
+        self.data = TestData()
+        self.basket = BasketPage(self)
+        self.products_page = ProductsPage(self)
+        self.login_page = LoginPage(self)
 
     def open_url(self, url):
         time.sleep(5)
         wd = self.wd
         wd.get(url)
 
-    def check_products_in_basket(self):
-        self.wd.find_element_by_xpath('//nav//a[@href="#/basket"]').click()
-        basket = self.wd.find_elements_by_xpath('//tbody/tr[@class="ng-scope"]')
-        for product in basket:
-            product_name = product.find_element_by_xpath('.//td[1]')
-            product_price = product.find_element_by_xpath('.//td[3]')
 
 
-    def add_the_cheapest_product_in_basket(self, search_result):
-        max_price = 0
-        cheapest_wear = None
-        for result in search_result:
-            price = result.find_element_by_xpath('./td[4]')
-            if float(price.text) > max_price:
-                max_price = float(price.text)
-                cheapest_wear = result
-        cheapest_wear.find_element_by_xpath('./td[5]//i[contains(@class, "fa-cart-plus")]').click()
-        max_price = 0
-        for result in search_result:
-            price = result.find_element_by_xpath('./td[4]')
-            if float(price.text) > max_price and result != cheapest_wear:
-                max_price = float(price.text)
-                cheapest_wear2 = result
-        cheapest_wear2.find_element_by_xpath('./td[5]//i[contains(@class, "fa-cart-plus")]').click()
 
 
-    def assert_result(self, search_result):
-        time.sleep(.5)
-        logs = self.wd.get_log('browser')
-        assert len(search_result) == 10
 
     def execute_js(self, script):
-        exec = self.wd.execute_script(script)
-        return exec
-
-    def search_product(self, product):
-        #with open(os.getcwd()+'/script.js') as script:
-        #    self.wd.execute_script(script.read())
-        self.wd.find_element_by_xpath('//nav//input[@ng-model="searchQuery"]').send_keys(product)
-        self.wd.find_element_by_xpath('//*[@id="searchButton"]').click()
-        self.data.search_result = self.wd.find_elements_by_xpath('//tbody/tr[@class="ng-scope"]')
+        exec_result = self.wd.execute_script(script)
+        return exec_result
 
 
-    def login(self, login, password):
-        self.wd.find_element_by_xpath('//a[@href="#/login"]').click()
-        time.sleep(.5)
-        self.wd.find_element_by_xpath('//*[@id="userEmail"]').send_keys(login)
-        self.wd.find_element_by_xpath('//*[@id="userPassword"]').send_keys(password)
-        self.wd.find_element_by_xpath('//*[@id="loginButton"]').click()
 
 
-    def clear_basket(self):
-        self.wd.find_element_by_xpath('//nav//a[@href="#/basket"]').click()
-        basket = self.wd.find_elements_by_xpath('//tbody/tr[@class="ng-scope"]')
-        for product in basket:
-            product.find_element_by_xpath('.//i[contains(@class, "fa-trash-o")]').click()
 
 
