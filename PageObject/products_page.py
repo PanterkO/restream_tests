@@ -1,5 +1,7 @@
 import time
 
+from models.data import Basket, Product
+
 
 class ProductsPage:
     def __init__(self, driver):
@@ -12,16 +14,23 @@ class ProductsPage:
         self.driver.wd.find_element_by_xpath('//*[@id="searchButton"]').click()
         self.driver.data.search_result = self.driver.wd.find_elements_by_xpath('//tbody/tr[@class="ng-scope"]')
 
-    def assert_search_result(self, search_result):
+
+    def assert_search_result(self):
         time.sleep(.5)
-        # logs = self.wd.get_log('browser')
+        search_results = self.driver.wd.find_elements_by_xpath('//tbody/tr[@class="ng-scope"]')
+        product_list = Basket()
+        for result in search_results:
+            product = Product()
+            product.name = result.find_element_by_xpath('.//td[2]').text
+            product.description = result.find_element_by_xpath('.//td/div[@ng-bind-html="product.description"]').text
+            product.price = float(result.find_element_by_xpath('.//td[4]').text)
+            product_list.add(product)
         # todo -проверить, что на странице содержатся все элементы которые бекэнд вернул на запрос
         # todo -для каждого элемента корректно выводится: название товара, описание товара, картинка на товар и цена
-        # todo -для каждого товара есть иконка "посмотреть" (глаз) и "купить (корзина)
-        assert len(search_result) == 10
+        assert len(search_results) == 10
 
     def assert_every_product_have_icons_show_details_and_add_to_basket(self, products):
-        # todo -для каждого товара есть иконка "посмотреть" (глаз) и "купить (корзина)
+
         for product in products:
             try:
                 product.find_element_by_xpath('.//i[contains(@class, "fa-eye")]')

@@ -6,7 +6,7 @@ import os
 from PageObject.basket_page import BasketPage
 from PageObject.login_page import LoginPage
 from PageObject.products_page import ProductsPage
-from models.test_data import TestData
+from models.data import TestData
 
 
 class Driver:
@@ -24,10 +24,6 @@ class Driver:
         time.sleep(5)
         wd = self.wd
         wd.get(url)
-
-
-
-
 
 
     def execute_js(self, script):
