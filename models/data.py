@@ -10,10 +10,11 @@ class TestData:
 
 class Product:
 
-    def __init__(self, name='', description='', price=0):
+    def __init__(self, name='', description='', price=0, image=''):
         self.name = name
         self.description = description
         self.price = price
+        self.image = image
 
 
 class Basket:
@@ -23,3 +24,4 @@ class Basket:
 
     def add(self, product):
         self.product_list.append(product)
+

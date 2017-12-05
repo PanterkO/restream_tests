@@ -29,9 +29,3 @@ class Driver:
     def execute_js(self, script):
         exec_result = self.wd.execute_script(script)
         return exec_result
-
-
-
-
-
-
