@@ -12,8 +12,8 @@ class BasketPage:
         data = self.driver.data
         driver = self.driver.wd
         basket = Basket()
-        self.driver.wd.find_element_by_xpath('//nav//a[@href="#/basket"]').click()
-        basket_elm = self.driver.wd.find_elements_by_xpath('//tbody/tr[@class="ng-scope"]')
+        driver.find_element_by_xpath('//nav//a[@href="#/basket"]').click()
+        basket_elm = driver.find_elements_by_xpath('//tbody/tr[@class="ng-scope"]')
         for product_elm in basket_elm:
             product = Product()
             product.name = product_elm.find_element_by_xpath('.//td[1]').text
