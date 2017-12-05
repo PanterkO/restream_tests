@@ -1,7 +1,6 @@
 from selenium import webdriver
 
 import time
-import os
 
 from PageObject.basket_page import BasketPage
 from PageObject.login_page import LoginPage
@@ -25,7 +24,9 @@ class Driver:
         wd = self.wd
         wd.get(url)
 
-
     def execute_js(self, script):
         exec_result = self.wd.execute_script(script)
         return exec_result
+
+    def browser_close(self):
+        self.wd.quit()

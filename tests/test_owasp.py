@@ -1,8 +1,7 @@
 import pytest
-from selenium import webdriver
 import time
-from wdriver import Driver
 
+from wdriver import Driver
 
 '''Есть интернет-магазин https://restream.sloppy.zone (логин restream5@mailinator.com \  пароль: 123456)
 
@@ -15,7 +14,8 @@ from wdriver import Driver
 -проверить что в корзине содержатся два этих товара
 -проверить что их цена в корзине соответствует их цене со страницы поиска'''
 
-@pytest.fixture
+
+@pytest.fixture()
 def driver():
     fixture = Driver()
     return fixture
@@ -27,25 +27,27 @@ def test_find_products_owasp(driver):
     products_page = driver.products_page
     basket = driver.basket
     login_page = driver.login_page
-    # todo убрать слипы
     driver.open_url(data.url)
-    login_page.login(data.login, data.password)
+    login_page.login('restream5@mailinator.com', '123456')
     time.sleep(.5)
+    basket.clear_basket()
     products_page.search_product(data.search_path)
-    products_page.assert_search_result()
-# todo разобраться с finalazer'ом
-'''def test_buy_two_cheapest_product(driver):
+    products_page.assert_search_result_is_correct()
+    products_page.assert_every_product_have_icons_show_details_and_add_to_basket(data.search_result)
+    driver.browser_close()
+
+
+def test_buy_two_cheapest_product(driver):
     data = driver.data
     products_page = driver.products_page
     basket = driver.basket
     login_page = driver.login_page
     driver.open_url(data.url)
-    login_page.login(data.login, data.password)
+    login_page.login('restream5@mailinator.com', '123456')
     time.sleep(.5)
     basket.clear_basket()
     products_page.search_product(data.search_path)
     products_page.assert_every_product_have_icons_show_details_and_add_to_basket(data.search_result)
     products_page.add_the_cheapest_product_to_basket(data.search_result)
     basket.check_products_in_basket()
-    time.sleep(10)
-'''
+    driver.browser_close()

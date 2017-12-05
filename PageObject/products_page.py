@@ -17,60 +17,53 @@ class ProductsPage:
         self.driver = driver
 
     def search_product(self, product):
-        # with open(os.getcwd()+'/script.js') as script:
-        #    self.wd.execute_script(script.read())
-        self.driver.wd.find_element_by_xpath('//nav//input[@ng-model="searchQuery"]').send_keys(product)
-        self.driver.wd.find_element_by_xpath('//*[@id="searchButton"]').click()
-        self.driver.data.search_result = self.driver.wd.find_elements_by_xpath('//tbody/tr[@class="ng-scope"]')
 
-    def assert_search_result(self):
+        driver = self.driver.wd
+        driver.find_element_by_xpath('//nav//input[@ng-model="searchQuery"]').send_keys(product)
+        driver.find_element_by_xpath('//*[@id="searchButton"]').click()
+        self.driver.data.search_result = driver.find_elements_by_xpath('//tbody/tr[@class="ng-scope"]')
+
+    def assert_search_result_is_correct(self):
+
         time.sleep(.5)
         # достаем все товары из результатов поиска
-        search_results = self.driver.wd.find_elements_by_xpath('//tbody/tr[@class="ng-scope"]')
-        product_list = Basket()
+        driver = self.driver.wd
+        search_results = driver.find_elements_by_xpath('//tbody/tr[@class="ng-scope"]')
+        products = Basket()
         for result in search_results:
             product = Product()
-            product.name = result.find_element_by_xpath('.//td[2]').text
-            product.description = result.find_element_by_xpath('.//td/div[@ng-bind-html="product.description"]').text
-            product.price = float(result.find_element_by_xpath('.//td[4]').text)
-            product.image = result.find_element_by_xpath('.//td/img').get_attribute("src")
-            product_list.add(product)
-        # todo достаем ответ из api
-        '''
+            product.parse(result)
+            products.add(product)
+
         import requests
         params = {'q': self.driver.data.search_path}
-        url = self.driver.data.url+'/rest/product/search?q=OWASP'
-        responce = requests.get(url=url)
-        print(responce.json())
-        requests.exceptions.ProxyError: HTTPSConnectionPool(host='restream.sloppy.zone', port=443): Max retries exceeded with url: /rest/product/search?q=OWASP (Caused by ProxyError('Cannot connect to proxy.', OSError('Tunnel connection failed: 407 Proxy Authentication Required',)))
-
-        '''
-        # todo подумать, как достать тест с ссылками
-        import json
-        with open('responce.json') as r:
-            responce = json.load(r)
-        product_list_from_api = Basket()
+        url = self.driver.data.url+'/rest/product/search'
+        request = requests.get(url=url, params=params)
+        responce = request.json()
+        products_api = Basket()
         for r in responce['data']:
             product = Product()
             product.name = r['name']
             product.description = without_links(r['description'])
             product.price = float(r['price'])
             product.image = r['image']
-            product_list_from_api.add(product)
-        assert len(product_list.product_list) == len(product_list_from_api.product_list)
-        for i in range(0, len(product_list.product_list) - 1):
-            assert product_list.product_list[i].name == product_list_from_api.product_list[i].name, \
-                'Название товара {} не соответствует API:{}'.format(product_list.product_list[i].name,
-                                                                    product_list_from_api.product_list[i].name)
-            assert product_list.product_list[i].description == product_list_from_api.product_list[i].description, \
-                'Описание товара {} не соответствует API:{}'.format(product_list.product_list[i].description,
-                                                                    product_list_from_api.product_list[i].description)
-            assert product_list.product_list[i].price == product_list_from_api.product_list[i].price, \
-                'Цена товара {} не соответствует API:{}'.format(product_list.product_list[i].price,
-                                                                product_list_from_api.product_list[i].price)
-            assert product_list_from_api.product_list[i].image in product_list.product_list[i].image, \
-                'Изображение товара {} не соответствует API:{}'.format(product_list.product_list[i].image,
-                                                                       product_list_from_api.product_list[i].image)
+            products_api.add(product)
+        assert len(products.product_list) == len(products_api.product_list)
+        for i in range(0, len(products.product_list) - 1):
+            assert products.product_list[i].name == products_api.product_list[i].name, \
+                'Название товара {} не соответствует API:{}'.format(products.product_list[i].name,
+                                                                    products_api.product_list[i].name)
+            assert products.product_list[i].description == products_api.product_list[i].description, \
+                'Описание товара {} не соответствует API:{}'.format(products.product_list[i].description,
+                                                                    products_api.product_list[i].description)
+            assert products.product_list[i].price == products_api.product_list[i].price, \
+                'Цена товара {} не соответствует API:{}'.format(products.product_list[i].price,
+                                                                products_api.product_list[i].price)
+            assert products_api.product_list[i].image in products.product_list[i].image, \
+                'Изображение товара {} не соответствует API:{}'.format(products.product_list[i].image,
+                                                                       products_api.product_list[i].image)
+
+
 
     def assert_every_product_have_icons_show_details_and_add_to_basket(self, products):
 
@@ -94,11 +87,19 @@ class ProductsPage:
 
     def add_the_cheapest_product_to_basket(self, search_result):
 
+        data = self.driver.data
+        product = Product()
+        data.pre_basket = Basket()
         cheapest_wear = self.search_the_cheapest_product(search_result)
         cheapest_wear.find_element_by_xpath('./td[5]//i[contains(@class, "fa-cart-plus")]').click()
+        product.parse(cheapest_wear)
+        data.pre_basket.add(product)
+
         max_price = float(cheapest_wear.find_element_by_xpath('./td[4]').text)
         cheapest_wear = self.search_the_cheapest_product(search_result, max_price)
         cheapest_wear.find_element_by_xpath('./td[5]//i[contains(@class, "fa-cart-plus")]').click()
+        product.parse(cheapest_wear)
+        data.pre_basket.add(product)
 
     def search_the_cheapest_product(self, products, max_previous_price=9223372036854775807):
         max_price = 0
