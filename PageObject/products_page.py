@@ -1,5 +1,3 @@
-import time
-
 from models.data import Basket, Product
 
 
@@ -19,13 +17,13 @@ class ProductsPage:
     def search_product(self, product):
 
         driver = self.driver.wd
+        data = self.driver.data
         driver.find_element_by_xpath('//nav//input[@ng-model="searchQuery"]').send_keys(product)
         driver.find_element_by_xpath('//*[@id="searchButton"]').click()
-        self.driver.data.search_result = driver.find_elements_by_xpath('//tbody/tr[@class="ng-scope"]')
+        data.search_result = driver.find_elements_by_xpath('//tbody/tr[@class="ng-scope"]')
 
     def assert_search_result_is_correct(self):
 
-        time.sleep(.5)
         # достаем все товары из результатов поиска
         driver = self.driver.wd
         search_results = driver.find_elements_by_xpath('//tbody/tr[@class="ng-scope"]')
@@ -48,7 +46,9 @@ class ProductsPage:
             product.price = float(r['price'])
             product.image = r['image']
             products_api.add(product)
+
         assert len(products.product_list) == len(products_api.product_list)
+
         for i in range(0, len(products.product_list) - 1):
             assert products.product_list[i].name == products_api.product_list[i].name, \
                 'Название товара {} не соответствует API:{}'.format(products.product_list[i].name,
@@ -89,7 +89,6 @@ class ProductsPage:
 
         data = self.driver.data
         product = Product()
-        data.pre_basket = Basket()
         cheapest_wear = self.search_the_cheapest_product(search_result)
         cheapest_wear.find_element_by_xpath('./td[5]//i[contains(@class, "fa-cart-plus")]').click()
         product.parse(cheapest_wear)

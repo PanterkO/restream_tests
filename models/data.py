@@ -6,8 +6,8 @@ class TestData:
         self.password = '123456'
         self.search_path = 'OWASP'
         self.search_result = None
-        self.pre_basket = None
-        self.basket = None
+        self.pre_basket = Basket()
+        self.basket = Basket()
 
 
 class Product:
